@@ -1,0 +1,2 @@
+icalendar>=2.2
+brownie>=0.5.1
