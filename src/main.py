@@ -90,7 +90,7 @@ def main(args):
     else:
         ics_text = get_ics_text(sys.stdin)
 
-    cal = icalendar.Calendar.from_string(ics_text)
+    cal = icalendar.Calendar.from_ical(ics_text)
     output = get_interesting_stuff(cal)
     print output.encode('utf-8')
 
