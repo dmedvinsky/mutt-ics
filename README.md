@@ -21,7 +21,7 @@ The steps are:
 2. Install requirements (virtualenv recommended, though not necessary)
 
         cd mutt-ics
-        vitrualenv .env
+        virtualenv .env
         .env/bin/pip install -r requirements.txt
         PATH_TO_STUFF=`pwd`
 
