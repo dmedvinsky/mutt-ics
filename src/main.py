@@ -49,14 +49,21 @@ def get_event(e):
     unmailto = lambda x: x.replace('MAILTO:', '')
     def get_header(e):
         keys = ['Subject', 'Organizer', 'Start', 'End', 'Location']
-        vals = [unicode(e['SUMMARY']),
-                unmailto(unicode(e['ORGANIZER'])),
-                e['DTSTART'].dt.strftime(datefmt),
-                e['DTEND'].dt.strftime(datefmt),
-                unicode(e['LOCATION'])]
+        vals = []
+        if 'SUMMARY' in e:
+            vals.append(('SUMMARY', unicode(e['SUMMARY'])))
+        if 'ORGANIZER' in e:
+            vals.append(('ORGANIZER', unmailto(unicode(e['ORGANIZER']))))
+        if 'DTSTART' in e:
+            vals.append(('DTSTART', e['DTSTART'].dt.strftime(datefmt)))
+        if 'DTEND' in e:
+            vals.append(('DTEND', e['DTEND'].dt.strftime(datefmt)))
+        if 'LOCATION' in e:
+            vals.append(('LOCATION', unicode(e['LOCATION'])))
+
         res = []
         max_width = max(map(len, keys))
-        for k, v in zip(keys, vals):
+        for k, v in vals:
             pad = ' ' * (max_width + 1 - len(k))
             res.append(u'%s:%s%s' % (k.capitalize(), pad, v))
         return u'\n'.join(res)
