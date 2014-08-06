@@ -55,9 +55,9 @@ def get_event(e):
                 e['DTEND'].dt.strftime(datefmt),
                 unicode(e['LOCATION'])]
         res = []
-        w = max(map(len, keys))
+        max_width = max(map(len, keys))
         for k, v in zip(keys, vals):
-            pad = ' ' * (w + 1 - len(k))
+            pad = ' ' * (max_width + 1 - len(k))
             res.append(u'%s:%s%s' % (k.capitalize(), pad, v))
         return u'\n'.join(res)
 
