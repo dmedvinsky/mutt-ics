@@ -63,6 +63,8 @@ def get_event(e):
 
     def get_participants(e):
         participants = e['ATTENDEE']
+        if not isinstance(participants, list):
+            participants = [ participants ]
         if len(participants):
             people = map(compose(partial(add, ' ' * 4), unmailto, unicode),
                          participants)
