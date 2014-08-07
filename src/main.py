@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import os
+import re
 import sys
 from functools import partial
 from operator import add
@@ -46,7 +47,7 @@ def get_component(component):
 
 
 def get_event(e):
-    unmailto = lambda x: x.replace('MAILTO:', '')
+    unmailto = lambda x: re.compile('mailto:', re.IGNORECASE).sub('', x)
     def get_header(e):
         keys = ['Subject', 'Organizer', 'Start', 'End', 'Location']
         vals = []
