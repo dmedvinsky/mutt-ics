@@ -70,7 +70,12 @@ def get_event(e):
         return u'\n'.join(res)
 
     def get_participants(e):
+        if 'ATTENDEE' not in e:
+            return None
+
         participants = e['ATTENDEE']
+        if not isinstance(participants, list):
+            participants = [ participants ]
         if len(participants):
             people = map(compose(partial(add, ' ' * 4), unmailto, unicode),
                          participants)
