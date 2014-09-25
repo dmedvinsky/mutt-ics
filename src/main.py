@@ -2,15 +2,32 @@
 import os
 import re
 import sys
-from functools import partial
+from functools import partial, reduce
 from operator import add
 
 import icalendar
-from brownie.functional import compose
-
 
 datefmt = '%A, %d %B %Y, %H:%M'
 
+def compose(*functions):
+    """
+    Returns a function which acts as a composition of several `functions`. If
+    one function is given it is returned if no function is given a
+    :exc:`TypeError` is raised.
+
+    >>> compose(lambda x: x + 1, lambda x: x * 2)(1)
+    3
+
+    .. note:: Each function (except the last one) has to take the result of the
+              last function as argument.
+
+   [ Shamelessly stolen from Brownie: https://github.com/DasIch/brownie ]
+    """
+    if not functions:
+        raise TypeError('expected at least 1 argument, got 0')
+    elif len(functions) == 1:
+        return functions[0]
+    return reduce(lambda f, g: lambda *a, **kws: f(g(*a, **kws)), functions)
 
 def get_ics_text(f):
     """
@@ -21,9 +38,8 @@ def get_ics_text(f):
     # Ugly workaround: Python datetime doesn't support dates earlier than 1900,
     # whilst Microsoft corp. has created it's Exchange Sever 2007 somewhere in
     # the beginning of XVII century. Yeah, right.
-    ics_text = content.replace("\nDTSTART:1601","\nDTSTART:1901")
+    ics_text = content.replace("\nDTSTART:1601", "\nDTSTART:1901")
     return ics_text
-
 
 def get_interesting_stuff(cal):
     components = []
@@ -32,7 +48,6 @@ def get_interesting_stuff(cal):
         if c is not None:
             components.append(c)
     return '\n'.join(components)
-
 
 def get_component(component):
     name = component.name
@@ -45,29 +60,28 @@ def get_component(component):
     else:
         return None
 
-
 def get_event(e):
     unmailto = lambda x: re.compile('mailto:', re.IGNORECASE).sub('', x)
     def get_header(e):
         keys = ['Subject', 'Organizer', 'Start', 'End', 'Location']
         vals = []
         if 'SUMMARY' in e:
-            vals.append(('SUMMARY', unicode(e['SUMMARY'])))
+            vals.append(('SUMMARY', e['SUMMARY']))
         if 'ORGANIZER' in e:
-            vals.append(('ORGANIZER', unmailto(unicode(e['ORGANIZER']))))
+            vals.append(('ORGANIZER', unmailto(e['ORGANIZER'])))
         if 'DTSTART' in e:
             vals.append(('DTSTART', e['DTSTART'].dt.strftime(datefmt)))
         if 'DTEND' in e:
             vals.append(('DTEND', e['DTEND'].dt.strftime(datefmt)))
         if 'LOCATION' in e:
-            vals.append(('LOCATION', unicode(e['LOCATION'])))
+            vals.append(('LOCATION', e['LOCATION']))
 
         res = []
         max_width = max(map(len, keys))
         for k, v in vals:
             pad = ' ' * (max_width + 1 - len(k))
-            res.append(u'%s:%s%s' % (k.capitalize(), pad, v))
-        return u'\n'.join(res)
+            res.append(u'%s:%s%s' % (k.capitalize(), pad, str(v)))
+        return '\n'.join(res)
 
     def get_participants(e):
         if 'ATTENDEE' not in e:
@@ -77,37 +91,33 @@ def get_event(e):
         if not isinstance(participants, list):
             participants = [ participants ]
         if len(participants):
-            people = map(compose(partial(add, ' ' * 4), unmailto, unicode),
-                         participants)
-            return u'\nParticipants:\n%s' % u'\n'.join(people)
+            p = map(compose(partial(add, ' ' * 4), unmailto),
+                    participants)
+            return 'Participants:\n%s' % "\n".join(p)
         else:
             return None
 
     def get_description(e):
-        description = unicode(e['DESCRIPTION']).strip()
+        description = e['DESCRIPTION'].strip()
         if len(description):
-            return u'\nDescription:\n\n%s' % description
+            return 'Description:\n\n%s' % description
         else:
             return None
 
     result = filter(bool, [get_header(e),
                            get_participants(e),
                            get_description(e)])
-    return u'\n'.join(result)
+    return "\n".join(result)
 
-
-def main(args):
-    if len(args) > 1 and os.path.isfile(args[1]):
-        with open(args[1]) as f:
+if __name__ == '__main__':
+    if len(sys.argv) > 1 and os.path.isfile(sys.argv[1]):
+        with open(sys.argv[1]) as f:
             ics_text = get_ics_text(f)
     else:
         ics_text = get_ics_text(sys.stdin)
 
     cal = icalendar.Calendar.from_ical(ics_text)
     output = get_interesting_stuff(cal)
-    print output.encode('utf-8')
+    sys.stdout.write(output)
 
-
-
-if __name__ == '__main__':
-    main(sys.argv)
+# vi:set ts=4 sw=4 et sta:
