@@ -21,13 +21,14 @@ def compose(*functions):
     .. note:: Each function (except the last one) has to take the result of the
               last function as argument.
 
-   [ Shamelessly stolen from Brownie: https://github.com/DasIch/brownie ]
+    [ Shamelessly stolen from Brownie: https://github.com/DasIch/brownie ]
     """
     if not functions:
         raise TypeError('expected at least 1 argument, got 0')
     elif len(functions) == 1:
         return functions[0]
     return reduce(lambda f, g: lambda *a, **kws: f(g(*a, **kws)), functions)
+
 
 def get_ics_text(f):
     """
@@ -41,6 +42,7 @@ def get_ics_text(f):
     ics_text = content.replace("\nDTSTART:1601", "\nDTSTART:1901")
     return ics_text
 
+
 def get_interesting_stuff(cal):
     components = []
     for component in cal.subcomponents:
@@ -48,6 +50,7 @@ def get_interesting_stuff(cal):
         if c is not None:
             components.append(c)
     return '\n'.join(components)
+
 
 def get_component(component):
     name = component.name
@@ -59,6 +62,7 @@ def get_component(component):
         return get_event(component)
     else:
         return None
+
 
 def get_event(e):
     unmailto = lambda x: re.compile('mailto:', re.IGNORECASE).sub('', x)
@@ -83,6 +87,7 @@ def get_event(e):
             res.append(u'%s:%s%s' % (k.capitalize(), pad, str(v)))
         return '\n'.join(res)
 
+
     def get_participants(e):
         if 'ATTENDEE' not in e:
             return None
@@ -91,11 +96,12 @@ def get_event(e):
         if not isinstance(participants, list):
             participants = [ participants ]
         if len(participants):
-            p = map(compose(partial(add, ' ' * 4), unmailto),
-                    participants)
-            return 'Participants:\n%s' % "\n".join(p)
+            people = map(compose(partial(add, ' ' * 4), unmailto),
+                         participants)
+            return 'Participants:\n%s' % "\n".join(people)
         else:
             return None
+
 
     def get_description(e):
         description = e['DESCRIPTION'].strip()
@@ -109,9 +115,9 @@ def get_event(e):
                            get_description(e)])
     return "\n".join(result)
 
-if __name__ == '__main__':
-    if len(sys.argv) > 1 and os.path.isfile(sys.argv[1]):
-        with open(sys.argv[1]) as f:
+def main(args):
+    if len(args) > 1 and os.path.isfile(args[1]):
+        with open(args[1]) as f:
             ics_text = get_ics_text(f)
     else:
         ics_text = get_ics_text(sys.stdin)
@@ -119,5 +125,8 @@ if __name__ == '__main__':
     cal = icalendar.Calendar.from_ical(ics_text)
     output = get_interesting_stuff(cal)
     sys.stdout.write(output)
+
+if __name__ == '__main__':
+    main(sys.argv)
 
 # vi:set ts=4 sw=4 et sta:
