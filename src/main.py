@@ -104,7 +104,7 @@ def get_event(e):
 
 
     def get_description(e):
-        description = e['DESCRIPTION'].strip()
+        description = e.get('DESCRIPTION', '').strip()
         if len(description):
             return 'Description:\n\n%s' % description
         else:
