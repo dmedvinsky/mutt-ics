@@ -7,7 +7,9 @@ from operator import add
 
 import icalendar
 
+
 datefmt = '%A, %d %B %Y, %H:%M'
+
 
 def compose(*functions):
     """
@@ -89,10 +91,7 @@ def get_event(e):
 
 
     def get_participants(e):
-        if 'ATTENDEE' not in e:
-            return None
-
-        participants = e['ATTENDEE']
+        participants = e.get('ATTENDEE', [])
         if not isinstance(participants, list):
             participants = [ participants ]
         if len(participants):
@@ -115,6 +114,7 @@ def get_event(e):
                            get_description(e)])
     return "\n".join(result)
 
+
 def main(args):
     if len(args) > 1 and os.path.isfile(args[1]):
         with open(args[1]) as f:
@@ -125,6 +125,7 @@ def main(args):
     cal = icalendar.Calendar.from_ical(ics_text)
     output = get_interesting_stuff(cal)
     sys.stdout.write(output)
+
 
 if __name__ == '__main__':
     main(sys.argv)
