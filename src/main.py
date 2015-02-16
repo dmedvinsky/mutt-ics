@@ -2,6 +2,7 @@
 import os
 import re
 import sys
+import codecs
 from functools import partial, reduce
 from operator import add
 
@@ -69,7 +70,7 @@ def get_component(component):
 def get_event(e):
     unmailto = lambda x: re.compile('mailto:', re.IGNORECASE).sub('', x)
     def get_header(e):
-        keys = ['Subject', 'Organizer', 'Start', 'End', 'Location']
+        keys = [u'Subject', u'Organizer', u'Start', u'End', u'Location']
         vals = []
         if 'SUMMARY' in e:
             vals.append(('SUMMARY', e['SUMMARY']))
@@ -85,8 +86,9 @@ def get_event(e):
         res = []
         max_width = max(map(len, keys))
         for k, v in vals:
-            pad = ' ' * (max_width + 1 - len(k))
-            res.append(u'%s:%s%s' % (k.capitalize(), pad, str(v)))
+            pad = u' ' * (max_width + 1 - len(k))
+            line = u'%s:%s%s' % (k.capitalize(), pad, v)
+            res.append(line)
         return '\n'.join(res)
 
 
@@ -117,9 +119,10 @@ def get_event(e):
 
 def main(args):
     if len(args) > 1 and os.path.isfile(args[1]):
-        with open(args[1]) as f:
+        with codecs.open(args[1], 'rb', 'utf-8') as f:
             ics_text = get_ics_text(f)
     else:
+        stream = codecs.getreader("utf-8")(sys.stdin)
         ics_text = get_ics_text(sys.stdin)
 
     cal = icalendar.Calendar.from_ical(ics_text)

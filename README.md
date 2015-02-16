@@ -29,7 +29,6 @@ The steps are:
 
         cat > ~/bin/show_ics <<EOF
         #!/bin/sh
-        export PYTHONIOENCODING=utf-8
         $PATH_TO_STUFF/.env/bin/python $PATH_TO_STUFF/src/main.py $@
         EOF
         chmod u+x ~/bin/show_ics
