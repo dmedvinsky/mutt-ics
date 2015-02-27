@@ -1,4 +1,5 @@
-# Mutt ICS
+Mutt ICS
+========
 
 Ever received a meeting notification in an email? Ever wanted to have a quick
 glance at that `.ics` file and know what is that meeting about, where is it
@@ -6,42 +7,25 @@ going to happen and who is participating?
 
 I did. So I made this little script.
 
-## Usage
+Usage
+-----
 
-For now this is kind of ugly, since I'm the only user of this. :-) Maybe one
-day I'll make something decent out of this. Please file a ticket if you want to
-give me a boost.
+The package is on PyPI so it is pip-installable, but I recommend using PIP
+Script Installer ([pipsi](https://github.com/mitsuhiko/pipsi)).
 
-The steps are:
+After installing with
 
-1. Clone the repository
+    pipsi install mutt_ics
 
-        git clone git://github.com/dmedvinsky/mutt-ics mutt-ics
+and making sure the `mutt-ics` executable is in your path, you should configure
+mutt to use it to render ICS files. To do that, complete the following steps:
 
-2. Install requirements (virtualenv recommended, though not necessary)
+1. Add the following line to your `.mailcap` file:
 
-        cd mutt-ics
-        virtualenv .env
-        .env/bin/pip install -r requirements.txt
-        PATH_TO_STUFF=`pwd`
+        text/calendar; mutt-ics; copiousoutput
 
-3. Create a launcher script somewhere in your $PATH:
-
-        cat > ~/bin/show_ics <<EOF
-        #!/bin/sh
-        $PATH_TO_STUFF/.env/bin/python $PATH_TO_STUFF/src/main.py $@
-        EOF
-        chmod u+x ~/bin/show_ics
-
-4. Add the following line in your `.mailcap` file:
-
-        text/calendar;      ~/bin/show_ics; copiousoutput
-
-5. Add the following line in your `.muttrc` file:
+2. Add the following line to your `.muttrc` file:
 
         auto_view text/calendar
 
-
-You're done. I guess. Maybe I forgot something. Again, file a ticket if I did.
-
-Thanks.
+You're done. I guess. Maybe I forgot something. Please, file a ticket if I did.
