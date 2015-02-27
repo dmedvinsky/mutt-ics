@@ -1,0 +1,9 @@
+BEGIN:VCALENDAR
+METHOD:REQUEST
+PRODID:Microsoft Exchange Server 2010
+VERSION:2.0
+BEGIN:VEVENT
+DESCRIPTION;LANGUAGE=en-US:When: Tuesday\, February 17\, 2015 2:00 PM-3:00 PM. (UTC+01:00) Amsterdam\, Berlin\, Bern\, Rome\, Stockholm\, Vienna\nWhere: XXX\n\n~~~~~~~~~\n\n Norwegian characters æ ø å\n
+SUMMARY;LANGUAGE=en-US:æ ø å
+END:VEVENT
+END:VCALENDAR
