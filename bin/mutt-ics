@@ -127,7 +127,7 @@ def main(args):
 
     cal = icalendar.Calendar.from_ical(ics_text)
     output = get_interesting_stuff(cal)
-    sys.stdout.write(output)
+    sys.stdout.write(output.encode('utf-8'))
 
 
 if __name__ == '__main__':
