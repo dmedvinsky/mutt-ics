@@ -52,7 +52,7 @@ def get_interesting_stuff(cal):
         c = get_component(component)
         if c is not None:
             components.append(c)
-    return '\n'.join(components)
+    return u'\n'.join(components)
 
 
 def get_component(component):
@@ -89,17 +89,17 @@ def get_event(e):
             pad = u' ' * (max_width + 1 - len(k))
             line = u'%s:%s%s' % (k.capitalize(), pad, v)
             res.append(line)
-        return '\n'.join(res)
+        return u'\n'.join(res)
 
 
     def get_participants(e):
         participants = e.get('ATTENDEE', [])
         if not isinstance(participants, list):
-            participants = [ participants ]
+            participants = [participants]
         if len(participants):
-            people = map(compose(partial(add, ' ' * 4), unmailto),
+            people = map(compose(partial(add, u' ' * 4), unmailto),
                          participants)
-            return 'Participants:\n%s' % "\n".join(people)
+            return u'Participants:\n%s' % "\n".join(people)
         else:
             return None
 
@@ -107,14 +107,14 @@ def get_event(e):
     def get_description(e):
         description = e.get('DESCRIPTION', '').strip()
         if len(description):
-            return 'Description:\n\n%s' % description
+            return u'Description:\n\n%s' % description
         else:
             return None
 
     result = filter(bool, [get_header(e),
                            get_participants(e),
                            get_description(e)])
-    return "\n".join(result)
+    return u'\n'.join(result)
 
 
 def main(args):
@@ -123,11 +123,12 @@ def main(args):
             ics_text = get_ics_text(f)
     else:
         stream = codecs.getreader("utf-8")(sys.stdin)
-        ics_text = get_ics_text(sys.stdin)
+        ics_text = get_ics_text(stream)
 
     cal = icalendar.Calendar.from_ical(ics_text)
     output = get_interesting_stuff(cal)
-    sys.stdout.write(output)
+    out_stream = codecs.getwriter("utf-8")(sys.stdout)
+    out_stream.write(output)
 
 
 if __name__ == '__main__':
