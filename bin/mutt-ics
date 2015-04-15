@@ -122,12 +122,12 @@ def main(args):
         with codecs.open(args[1], 'rb', 'utf-8') as f:
             ics_text = get_ics_text(f)
     else:
-        stream = codecs.getreader("utf-8")(sys.stdin)
+        stream = codecs.getreader("utf-8")(sys.stdin.buffer)
         ics_text = get_ics_text(stream)
 
     cal = icalendar.Calendar.from_ical(ics_text)
     output = get_interesting_stuff(cal)
-    out_stream = codecs.getwriter("utf-8")(sys.stdout)
+    out_stream = codecs.getwriter("utf-8")(sys.stdout.buffer)
     out_stream.write(output)
 
 
