@@ -42,7 +42,10 @@ def get_ics_text(f):
     # Ugly workaround: Python datetime doesn't support dates earlier than 1900,
     # whilst Microsoft corp. has created it's Exchange Sever 2007 somewhere in
     # the beginning of XVII century. Yeah, right.
-    ics_text = content.replace("\nDTSTART:1601", "\nDTSTART:1901")
+    hacks = {"STANDARD\nDTSTART:16010101": "STANDARD\nDTSTART:20071104",
+             "DAYLIGHT\nDTSTART:16010101": "DAYLIGHT\nDTSTART:20070311"}
+    for search, replace in hacks.items():
+        ics_text = content.replace(search, replace)
     return ics_text
 
 
