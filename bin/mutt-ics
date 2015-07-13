@@ -67,27 +67,39 @@ def get_component(component):
         return None
 
 
+def identity(x):
+    return x
+
+
+def format_date(x):
+    return x.dt.strftime(datefmt)
+
+
 def get_event(e):
     unmailto = lambda x: re.compile('mailto:', re.IGNORECASE).sub('', x)
     def get_header(e):
-        keys = [u'Subject', u'Organizer', u'Start', u'End', u'Location']
+        name_map = {'SUMMARY': 'Subject',
+                    'ORGANIZER': 'Organizer',
+                    'DTSTART': 'Start',
+                    'DTEND': 'End',
+                    'LOCATION': 'Location'}
         vals = []
-        if 'SUMMARY' in e:
-            vals.append(('SUMMARY', e['SUMMARY']))
-        if 'ORGANIZER' in e:
-            vals.append(('ORGANIZER', unmailto(e['ORGANIZER'])))
-        if 'DTSTART' in e:
-            vals.append(('DTSTART', e['DTSTART'].dt.strftime(datefmt)))
-        if 'DTEND' in e:
-            vals.append(('DTEND', e['DTEND'].dt.strftime(datefmt)))
-        if 'LOCATION' in e:
-            vals.append(('LOCATION', e['LOCATION']))
-
         res = []
-        max_width = max(map(len, keys))
+
+        def get_val(name, f):
+            if name in e:
+                vals.append((name_map[name], f(e[name])))
+
+        get_val('SUMMARY', identity)
+        get_val('ORGANIZER', unmailto)
+        get_val('DTSTART', format_date)
+        get_val('DTEND', format_date)
+        get_val('LOCATION', identity)
+
+        max_width = max(len(k) for k, v in vals)
         for k, v in vals:
             pad = u' ' * (max_width + 1 - len(k))
-            line = u'%s:%s%s' % (k.capitalize(), pad, v)
+            line = u'%s:%s%s' % (k, pad, v)
             res.append(line)
         return u'\n'.join(res)
 
