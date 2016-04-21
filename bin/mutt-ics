@@ -10,7 +10,7 @@ from dateutil import tz
 import icalendar
 
 
-datefmt = '%A, %d %B %Y, %H:%M'
+datefmt = '%A, %d %B %Y, %H:%M %Z'
 
 
 def compose(*functions):
