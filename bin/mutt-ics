@@ -5,11 +5,12 @@ import re
 import sys
 from functools import partial, reduce
 from operator import add
+from dateutil import tz
 
 import icalendar
 
 
-datefmt = '%A, %d %B %Y, %H:%M'
+datefmt = '%A, %d %B %Y, %H:%M %Z'
 
 
 def compose(*functions):
@@ -75,7 +76,7 @@ def identity(x):
 
 
 def format_date(x):
-    return x.dt.strftime(datefmt)
+    return x.dt.astimezone(tz.tzlocal()).strftime(datefmt)
 
 
 def get_event(e):
