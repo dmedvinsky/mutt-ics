@@ -147,7 +147,11 @@ def main(args):
     out_stream.write(output + '\n')
 
 
+def entry_point():
+    return main(sys.argv)
+
+
 if __name__ == '__main__':
-    main(sys.argv)
+    entry_point()
 
 # vi:set ts=4 sw=4 et sta:

@@ -24,8 +24,12 @@ setup(name='mutt_ics',
       author='Dmitry Medvinsky',
       author_email='me@dmedvinsky.name',
       license='MIT',
-      packages=[],
-      scripts=['bin/mutt-ics'],
+      packages=['mutt_ics'],
+      entry_points={
+          'console_scripts': [
+              'mutt-ics = mutt_ics.mutt_ics:entry_point',
+          ],
+      },
       install_requires=requirements(),
       include_package_data=True,
       zip_safe=False)
