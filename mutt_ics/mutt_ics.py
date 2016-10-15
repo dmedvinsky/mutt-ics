@@ -107,7 +107,6 @@ def get_event(e):
             res.append(line)
         return u'\n'.join(res)
 
-
     def get_participants(e):
         participants = e.get('ATTENDEE', [])
         if not isinstance(participants, list):
@@ -119,17 +118,17 @@ def get_event(e):
         else:
             return None
 
-
-    def get_description(e):
-        description = e.get('DESCRIPTION', '').strip()
-        if len(description):
-            return u'Description:\n\n%s' % description
+    def get_text_field(e, field, label):
+        value = e.get(field, '').strip()
+        if len(value):
+            return u'%s:\n\n%s' % (label, value)
         else:
             return None
 
     result = filter(bool, [get_header(e),
                            get_participants(e),
-                           get_description(e)])
+                           get_text_field(e, 'DESCRIPTION', 'Description'),
+                           get_text_field(e, 'COMMENT', 'Comment')])
     return u'\n'.join(result)
 
 
