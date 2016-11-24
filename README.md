@@ -20,12 +20,13 @@ After installing with
 and making sure the `mutt-ics` executable is in your path, you should configure
 mutt to use it to render ICS files. To do that, complete the following steps:
 
-1. Add the following line to your `.mailcap` file:
+1. Add the following lines to your `.mailcap` file:
 
         text/calendar; mutt-ics; copiousoutput
+        application/ics; mutt-ics; copiousoutput 
 
 2. Add the following line to your `.muttrc` file:
 
-        auto_view text/calendar
+        auto_view text/calendar application/ics
 
 You're done. I guess. Maybe I forgot something. Please, file a ticket if I did.
