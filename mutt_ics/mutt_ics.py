@@ -76,7 +76,11 @@ def identity(x):
 
 
 def format_date(x):
-    return x.dt.astimezone(tz.tzlocal()).strftime(datefmt)
+    if hasattr(x.dt, 'astimezone'):
+        date_or_time = x.dt.astimezone(tz.tzlocal())
+    else:
+        date_or_time = x.dt
+    return date_or_time.strftime(datefmt)
 
 
 def get_event(e):
