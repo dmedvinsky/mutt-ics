@@ -76,9 +76,9 @@ def identity(x):
 
 
 def format_date(x):
-    if hasattr(x.dt, 'astimezone'):
+    try:
         date_or_time = x.dt.astimezone(tz.tzlocal())
-    else:
+    except (AttributeError, ValueError):
         date_or_time = x.dt
     return date_or_time.strftime(datefmt)
 
