@@ -12,7 +12,7 @@ def requirements():
 
 
 setup(name='mutt_ics',
-      version='0.9.1',
+      version='0.9.2',
       description='A tool to show calendar event details in Mutt.',
       long_description=readme(),
       classifiers=[
