@@ -29,4 +29,11 @@ mutt to use it to render ICS files. To do that, complete the following steps:
 
         auto_view text/calendar application/ics
 
+3. For `multipart/alternative` e-mails (which is what e.g. Outlook calendar generates),
+   you probably want to prefer the `text/calendar` format view instead of its textual
+   counterparts. For such settings add another line to the `.muttrc` config file:
+
+        alternative_order text/calendar text/plain text/html
+
+
 You're done. I guess. Maybe I forgot something. Please, file a ticket if I did.
