@@ -10,12 +10,12 @@ I did. So I made this little script.
 Usage
 -----
 
-The package is on PyPI so it is pip-installable, but I recommend using PIP
-Script Installer ([pipsi](https://github.com/mitsuhiko/pipsi)).
+The package is on PyPI so it is pip-installable, but I recommend using
+[uv](https://docs.astral.sh/uv/guides/tools/).
 
 After installing with
 
-    pipsi install mutt_ics
+    uv tool install mutt_ics
 
 and making sure the `mutt-ics` executable is in your path, you should configure
 mutt to use it to render ICS files. To do that, complete the following steps:
