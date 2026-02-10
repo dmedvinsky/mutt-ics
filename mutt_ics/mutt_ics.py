@@ -1,10 +1,5 @@
 #!/usr/bin/env python
 import datetime
-import io
-import os
-import sys
-from functools import partial, reduce
-from operator import add
 from dateutil import tz
 
 import click
@@ -14,25 +9,11 @@ import icalendar
 datefmt = '%A, %d %B %Y, %H:%M %Z'
 
 
-def compose(*functions):
-    """
-    Returns a function which acts as a composition of several `functions`. If
-    one function is given it is returned if no function is given a
-    :exc:`TypeError` is raised.
-
-    >>> compose(lambda x: x + 1, lambda x: x * 2)(1)
-    3
-
-    .. note:: Each function (except the last one) has to take the result of the
-              last function as argument.
-
-    [ Shamelessly stolen from Brownie: https://github.com/DasIch/brownie ]
-    """
-    if not functions:
-        raise TypeError('expected at least 1 argument, got 0')
-    elif len(functions) == 1:
-        return functions[0]
-    return reduce(lambda f, g: lambda *a, **kws: f(g(*a, **kws)), functions)
+# TODO: make configurable
+colour_scheme = {'date': 'green',
+                 'email': 'magenta',
+                 'label': 'blue',
+                 }
 
 
 def get_ics_text(f):
@@ -51,93 +32,30 @@ def get_ics_text(f):
     return ics_text
 
 
-def get_interesting_stuff(cal):
-    components = []
-    for component in cal.subcomponents:
-        c = get_component(component)
-        if c is not None:
-            components.append(c)
-    return u'\n'.join(components)
+def write_element(component, name, label):
+    if name not in component:
+        return
 
+    val = component[name]
+    click.secho(f'{label:16}', fg=colour_scheme['label'], nl='')
 
-def get_component(component):
-    name = component.name
-    if name == 'VCALENDAR':
-        pass
-    elif name == 'VTIMEZONE':
-        pass
-    elif name == 'VEVENT':
-        return get_event(component)
+    if isinstance(val, icalendar.vCalAddress):
+        click.secho(val.email, fg=colour_scheme['email'])
+
+    elif isinstance(val, icalendar.vDDDTypes):
+        if isinstance(val.dt, datetime.date):
+            local_time = val.dt
+        else:
+            local_time = val.dt.astimezone(tz.tzlocal())
+
+        click.secho(local_time.strftime(datefmt), fg=colour_scheme['date'])
+
+    elif isinstance(val, icalendar.vText):
+        click.echo(val)
+
     else:
-        return None
-
-
-def stringify(x):
-    if isinstance(x, icalendar.vCalAddress):
-        return x.email
-
-    elif isinstance(x, icalendar.vDDDTypes):
-        if isinstance(x.dt, datetime.date):
-            dt = x.dt
-        else:
-            dt = x.dt.astimezone(tz.tzlocal())
-
-        return dt.strftime(datefmt)
-
-    elif isinstance(x, icalendar.vText):
-        return x
-
-
-def get_event(e):
-    def get_header(e):
-        name_map = {'SUMMARY': 'Subject',
-                    'ORGANIZER': 'Organizer',
-                    'DTSTART': 'Start',
-                    'DTEND': 'End',
-                    'LOCATION': 'Location'}
-        vals = []
-        res = []
-
-        def get_val(name):
-            if name in e and e[name] is not None:
-                vals.append((name_map[name], stringify(e[name])))
-
-        get_val('SUMMARY')
-        get_val('ORGANIZER')
-        get_val('DTSTART')
-        get_val('DTEND')
-        get_val('LOCATION')
-
-        max_width = max(len(k) for k, v in vals)
-        for k, v in vals:
-            pad = u' ' * (max_width + 1 - len(k))
-            line = u'%s:%s%s' % (k, pad, v)
-            res.append(line)
-        return u'\n'.join(res)
-
-    def get_participants(e):
-        participants = e.get('ATTENDEE', [])
-        if not isinstance(participants, list):
-            participants = [participants]
-        if len(participants):
-            people = map(compose(partial(add, u' ' * 4), stringify),
-                         participants)
-            return u'Participants:\n%s' % "\n".join(people)
-        else:
-            return None
-
-    def get_text_field(e, field, label):
-        value = e.get(field, '').strip()
-        if len(value):
-            return u'%s:\n\n%s' % (label, value)
-        else:
-            return None
-
-    result = filter(bool, [get_header(e),
-                           get_participants(e),
-                           get_text_field(e, 'DESCRIPTION', 'Description'),
-                           get_text_field(e, 'COMMENT', 'Comment')])
-    return u'\n'.join(result)
+        click.secho(repr(val), fg='red')
+        click.secho(dir(val), fg='yellow')
 
 
 @click.command()
@@ -146,7 +64,20 @@ def main(ics_file):
     ics_text = get_ics_text(ics_file)
 
     cal = icalendar.Calendar.from_ical(ics_text)
-    click.echo(get_interesting_stuff(cal))
+
+    for component in cal.subcomponents:
+        if component.name == 'VEVENT':
+            write_element(component, 'SUMMARY', 'Summary')
+            write_element(component, 'DESCRIPTION', 'Description')
+            write_element(component, 'DURATION', 'Duration')
+            write_element(component, 'DTSTART', 'Start')
+            write_element(component, 'DTEND', 'End')
+            write_element(component, 'STATUS', 'Status')
+
+            write_element(component, 'LOCATION', 'Location')
+            write_element(component, 'ORGANIZER', 'Organizer')
+            write_element(component, 'ATTENDEE', 'Attendee')
+            write_element(component, 'COMMENT', 'Comment')
 
 
 if __name__ == '__main__':
