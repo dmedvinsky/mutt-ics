@@ -7,6 +7,7 @@ from functools import partial, reduce
 from operator import add
 from dateutil import tz
 
+import click
 import icalendar
 
 
@@ -139,25 +140,16 @@ def get_event(e):
     return u'\n'.join(result)
 
 
-def main(args):
-    if len(args) > 1 and os.path.isfile(args[1]):
-        with io.open(args[1], 'r', encoding='utf-8') as f:
-            ics_text = get_ics_text(f)
-    else:
-        stream = io.open(sys.stdin.fileno(), 'r', encoding='utf-8')
-        ics_text = get_ics_text(stream)
+@click.command()
+@click.argument("ics_file", type=click.File('r', encoding='utf-8'), default='-')
+def main(ics_file):
+    ics_text = get_ics_text(ics_file)
 
     cal = icalendar.Calendar.from_ical(ics_text)
-    output = get_interesting_stuff(cal)
-    out_stream = io.open(sys.stdout.fileno(), 'w', encoding='utf-8')
-    out_stream.write(output + '\n')
-
-
-def entry_point():
-    return main(sys.argv)
+    click.echo(get_interesting_stuff(cal))
 
 
 if __name__ == '__main__':
-    entry_point()
+    main()
 
 # vi:set ts=4 sw=4 et sta:
