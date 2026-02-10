@@ -1,7 +1,7 @@
 #!/usr/bin/env python
+import datetime
 import io
 import os
-import re
 import sys
 from functools import partial, reduce
 from operator import add
@@ -71,20 +71,23 @@ def get_component(component):
         return None
 
 
-def identity(x):
-    return x
+def stringify(x):
+    if isinstance(x, icalendar.vCalAddress):
+        return x.email
 
+    elif isinstance(x, icalendar.vDDDTypes):
+        if isinstance(x.dt, datetime.date):
+            dt = x.dt
+        else:
+            dt = x.dt.astimezone(tz.tzlocal())
 
-def format_date(x):
-    try:
-        date_or_time = x.dt.astimezone(tz.tzlocal())
-    except (AttributeError, ValueError):
-        date_or_time = x.dt
-    return date_or_time.strftime(datefmt)
+        return dt.strftime(datefmt)
+
+    elif isinstance(x, icalendar.vText):
+        return x
 
 
 def get_event(e):
-    unmailto = lambda x: re.compile('mailto:', re.IGNORECASE).sub('', x)
     def get_header(e):
         name_map = {'SUMMARY': 'Subject',
                     'ORGANIZER': 'Organizer',
@@ -94,15 +97,15 @@ def get_event(e):
         vals = []
         res = []
 
-        def get_val(name, f):
+        def get_val(name):
             if name in e and e[name] is not None:
-                vals.append((name_map[name], f(e[name])))
+                vals.append((name_map[name], stringify(e[name])))
 
-        get_val('SUMMARY', identity)
-        get_val('ORGANIZER', unmailto)
-        get_val('DTSTART', format_date)
-        get_val('DTEND', format_date)
-        get_val('LOCATION', identity)
+        get_val('SUMMARY')
+        get_val('ORGANIZER')
+        get_val('DTSTART')
+        get_val('DTEND')
+        get_val('LOCATION')
 
         max_width = max(len(k) for k, v in vals)
         for k, v in vals:
@@ -116,7 +119,7 @@ def get_event(e):
         if not isinstance(participants, list):
             participants = [participants]
         if len(participants):
-            people = map(compose(partial(add, u' ' * 4), unmailto),
+            people = map(compose(partial(add, u' ' * 4), stringify),
                          participants)
             return u'Participants:\n%s' % "\n".join(people)
         else:
