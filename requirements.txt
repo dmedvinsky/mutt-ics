@@ -1,1 +1,2 @@
+click>=8.0.0
 icalendar>=3.9.0

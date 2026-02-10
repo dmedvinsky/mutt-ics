@@ -27,7 +27,7 @@ setup(name='mutt_ics',
       packages=['mutt_ics'],
       entry_points={
           'console_scripts': [
-              'mutt-ics = mutt_ics.mutt_ics:entry_point',
+              'mutt-ics = mutt_ics.mutt_ics:main',
           ],
       },
       install_requires=requirements(),
