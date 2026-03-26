@@ -95,7 +95,7 @@ def get_event(e):
         res = []
 
         def get_val(name, f):
-            if name in e and e[name] is not None:
+            if name in e:
                 vals.append((name_map[name], f(e[name])))
 
         get_val('SUMMARY', identity)
