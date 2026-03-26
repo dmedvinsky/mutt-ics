@@ -34,20 +34,37 @@ def compose(*functions):
     return reduce(lambda f, g: lambda *a, **kws: f(g(*a, **kws)), functions)
 
 
-def get_ics_text(f):
+def _fix_exchange_quirks(ics_text):
     """
-    Loads the content from the stream and applies a workaround for Microsoft
-    Exchange Server.
+    Work around known Microsoft Exchange Server iCal generation bugs:
+
+    1. Exchange uses DTSTART:16010101 in VTIMEZONE components, but Python
+       datetime doesn't support dates before 1900. Replace with sane defaults.
+
+    2. For recurring meeting invites, Exchange sometimes appends a stub VEVENT
+       containing only a UID (no DTSTART, SUMMARY, etc.) and omits the closing
+       END:VCALENDAR. Strip empty VEVENTs and ensure proper termination so
+       icalendar.Calendar.from_ical() doesn't choke.
     """
-    content = f.read()
-    # Ugly workaround: Python datetime doesn't support dates earlier than 1900,
-    # whilst Microsoft corp. has created it's Exchange Sever 2007 somewhere in
-    # the beginning of XVII century. Yeah, right.
+    import re
     hacks = {"STANDARD\nDTSTART:16010101": "STANDARD\nDTSTART:20071104",
              "DAYLIGHT\nDTSTART:16010101": "DAYLIGHT\nDTSTART:20070311"}
     for search, replace in hacks.items():
-        ics_text = content.replace(search, replace)
+        ics_text = ics_text.replace(search, replace)
+    ics_text = re.sub(
+        r'BEGIN:VEVENT\r?\n(?:UID:[^\r\n]*\r?\n)?END:VEVENT\r?\n?', '',
+        ics_text)
+    if 'END:VCALENDAR' not in ics_text:
+        ics_text = ics_text.rstrip() + '\r\nEND:VCALENDAR\r\n'
     return ics_text
+
+
+def get_ics_text(f):
+    """
+    Loads the content from the stream and applies workarounds for Microsoft
+    Exchange Server.
+    """
+    return _fix_exchange_quirks(f.read())
 
 
 def get_interesting_stuff(cal):
